@@ -92,7 +92,7 @@ const STEPS = [
           { value: "CONVIDADO", label: { pt: "Convidado",en: "Guest",es: "Invitado"} },
         ],
       },
-      { id: "token", label: { pt: "Token", en: "Token", es: "Inscripción Estatal" }, type: "text" },
+      { id: "token", label: { pt: "Token", en: "Token", es: "Token" }, type: "text", required: true },
     ],
   },
   {
@@ -341,21 +341,27 @@ function renderFields() {
         </div>`;
       }
 
+      // Campo normal (text, email, number, etc) - incluindo TOKEN
       return `<div class="field-wrap ${fullClass}">
         <label for="${f.id}">${label}</label>
-        <input type="${f.type}" id="${f.id}" name="${f.id}" value="${val}"${f.required ? " required" : ""} autocomplete="off">
+        <input 
+          type="${f.type}" 
+          id="${f.id}" 
+          name="${f.id}" 
+          value="${val}" 
+          ${f.required ? " required" : ""} 
+          autocomplete="off">
       </div>`;
     })
     .join("");
 
-  // Máscaras, autosave e radio chips
+  // === EVENT LISTENERS (corrigido) ===
   step.fields.forEach((f) => {
     if (f.type === "radio") {
       const group = document.getElementById(`${f.id}-group`);
       if (!group) return;
       group.querySelectorAll(`input[name="${f.id}"]`).forEach((radio) => {
         radio.addEventListener("change", () => {
-          // Atualiza visual dos chips
           group.querySelectorAll(".radio-chip").forEach((chip) => {
             chip.classList.toggle("radio-chip--selected", chip.querySelector("input").checked);
           });
@@ -363,17 +369,23 @@ function renderFields() {
           saveDraft();
         });
       });
-      return;
+      return; // só sai do radio
     }
 
+    // Para todos os outros campos (incluindo token)
     const el = document.getElementById(f.id);
     if (!el) return;
+
     el.addEventListener("input", () => {
       let v = el.value;
-      if (f.mask) { v = applyMask(v, f.mask); el.value = v; }
+      if (f.mask) {
+        v = applyMask(v, f.mask);
+        el.value = v;
+      }
       formData[f.id] = v;
       saveDraft();
     });
+
     el.addEventListener("change", () => {
       formData[f.id] = el.value;
       saveDraft();
