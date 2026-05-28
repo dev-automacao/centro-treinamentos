@@ -605,7 +605,7 @@ function validateCurrentStep() {
 
     if (f.validateToken && el.value.trim()) {
       const errSpan = document.getElementById(`${f.id}-error`);
-      if (!el.value.trim().startsWith("FG-")) {
+      if (!el.value.trim().startsWith("FULLGAUGE-")) {
         el.classList.add("invalid");
         if (errSpan) errSpan.textContent = t("invalidToken");
         valid = false;

@@ -458,10 +458,10 @@ button:focus {
 .radio-chip,
 .checkbox-chip {
   border: 1px solid var(--line-200);
-  border-radius: 999px;
+  border-radius: 24px;
   padding: 0.46rem 0.9rem;
   display: flex;
-  align-items: flex-start;
+  align-items: anchor-center;
   gap: 0.45rem;
   font-size: 0.85rem;
   font-weight: 600;
