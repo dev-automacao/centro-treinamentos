@@ -361,11 +361,13 @@ function renderFields() {
 
       if (f.type === "checkbox") {
         const checked = val === true ? " checked" : "";
-        return `<div class="field-wrap ${fullClass} checkbox-wrap">
-          <label class="checkbox-label" for="${f.id}">
-            <input type="checkbox" id="${f.id}" name="${f.id}" ${checked} ${f.required ? "required" : ""}>
-            <span>${label}</span>
-          </label>
+        return `<div class="field-wrap ${fullClass}" id="field-wrap-${f.id}">
+          <div class="checkbox-group">
+            <label class="checkbox-chip${val === true ? " checkbox-chip--selected" : ""}" for="${f.id}">
+              <input type="checkbox" id="${f.id}" name="${f.id}" ${checked} ${f.required ? "required" : ""}>
+              <span>${label}</span>
+            </label>
+          </div>
         </div>`;
       }
 
@@ -394,6 +396,8 @@ function renderFields() {
       if (!group) return;
       group.querySelectorAll(`input[name="${f.id}"]`).forEach((radio) => {
         radio.addEventListener("change", () => {
+          const wrap = document.getElementById(`field-wrap-${f.id}`);
+          if (wrap) wrap.classList.remove("invalid-group");
           group.querySelectorAll(".radio-chip").forEach((chip) => {
             chip.classList.toggle("radio-chip--selected", chip.querySelector("input").checked);
           });
@@ -408,6 +412,8 @@ function renderFields() {
       if (!group) return;
       group.querySelectorAll(`input[type="checkbox"]`).forEach((cb) => {
         cb.addEventListener("change", () => {
+          const wrap = document.getElementById(`field-wrap-${f.id}`);
+          if (wrap) wrap.classList.remove("invalid-group");
           const checkedVals = Array.from(group.querySelectorAll("input:checked")).map(i => i.value);
           formData[f.id] = checkedVals;
           cb.closest(".checkbox-chip").classList.toggle("checkbox-chip--selected", cb.checked);
@@ -420,7 +426,10 @@ function renderFields() {
     const el = document.getElementById(f.id);
     if (!el) return;
 
-        el.addEventListener("input", () => {
+    el.addEventListener(f.type === "checkbox" ? "change" : "input", () => {
+      const wrap = document.getElementById(`field-wrap-${f.id}`);
+      if (wrap) wrap.classList.remove("invalid-group"); // Remove o erro ao interagir
+      el.classList.remove("invalid");
       let v = el.value;
       if (f.mask) {
         v = applyMask(v, f.mask);
@@ -430,7 +439,13 @@ function renderFields() {
         v = v.toUpperCase();
         el.value = v; // Atualiza o valor exibido no campo
       }
-      formData[f.id] = v;
+      
+      if (f.type === "checkbox") {
+        formData[f.id] = el.checked;
+        el.closest(".checkbox-chip")?.classList.toggle("checkbox-chip--selected", el.checked);
+      } else {
+        formData[f.id] = v;
+      }
 
       // Limpa erro de e-mail em tempo real
       if (f.validateEmail) {
@@ -445,7 +460,7 @@ function renderFields() {
       // Limpa erro de token em tempo real
       if (f.validateToken) {
         const errSpan = document.getElementById(`${f.id}-error`);
-        if (v.trim().startsWith("FG-")) {
+        if (v.trim().startsWith("FULLGAUGE-")) {
           el.classList.remove("invalid");
           if (errSpan) errSpan.textContent = "";
         }
@@ -453,6 +468,7 @@ function renderFields() {
     });
 
     el.addEventListener("change", () => {
+      el.classList.remove("invalid");
       formData[f.id] = el.value;
 
       // Se mudar a turma, busca os módulos
@@ -549,9 +565,12 @@ function validateCurrentStep() {
     el.classList.remove("invalid");
     el.removeAttribute("data-error");
 
+    const wrap = document.getElementById(`field-wrap-${f.id}`);
+    if (wrap) wrap.classList.remove("invalid-group"); // Limpa antes de revalidar
+
     if (f.type === "checkbox") {
       if (f.required && !el.checked) {
-        el.classList.add("invalid");
+        if (wrap) wrap.classList.add("invalid-group"); // Aplica ao wrap para consistência visual
         valid = false;
       }
     } else {
