@@ -84,97 +84,25 @@
           <div class="progress-head">
             <div>
               <p class="progress-label" data-i18n="overallProgressLabel">Progresso geral</p>
-              <p class="progress-step"><span id="stepCounter">Etapa 2 de 6</span></p>
+            <p class="progress-step"><span id="stepCounter">...</span></p>
             </div>
-            <strong id="progressValue">33%</strong>
+          <strong id="progressValue">0%</strong>
           </div>
           <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Progresso geral">
-            <div id="progressFill" class="progress-fill" aria-valuenow="33" style="width: 33%;"></div>
+          <div id="progressFill" class="progress-fill" aria-valuenow="0" style="width: 0%;"></div>
           </div>
         </section>
 
-        <div class="stepper" id="stepper" aria-label="Etapas do cadastro">
-          <div class="step-item done">
-            <span>Etapa 1</span>
-            <strong>Relação</strong>
-          </div>
-
-          <div class="step-item active">
-            <span>Etapa 2</span>
-            <strong>Dados comerciais</strong>
-          </div>
-
-          <div class="step-item ">
-            <span>Etapa 3</span>
-            <strong>Dados gerais</strong>
-          </div>
-
-          <div class="step-item ">
-            <span>Etapa 4</span>
-            <strong>Endereço principal</strong>
-          </div>
-
-          <div class="step-item ">
-            <span>Etapa 5</span>
-            <strong>Contato e NFE</strong>
-          </div>
-
-          <div class="step-item ">
-            <span>Etapa 6</span>
-            <strong>Revisão final</strong>
-          </div>
-        </div>
+      <div class="stepper" id="stepper" aria-label="Etapas do cadastro"></div>
 
         <form id="leadForm" novalidate="">
           <div class="form-head">
-            <h2 id="stepTitle">Dados comerciais</h2>
-            <p id="stepDescription">Linha de negócio, segmento e consultor responsável.</p>
+          <h2 id="stepTitle">...</h2>
+          <p id="stepDescription">...</p>
             <p class="required-legend" data-i18n="requiredLegend">Campos com * são obrigatórios.</p>
           </div>
 
-          <div id="formFields" class="form-grid">
-            <div class="field-wrap full">
-              <label for="lineOfBusiness">Linha de Negócio *</label>
-              <select required="" name="lineOfBusiness" id="lineOfBusiness">
-                <option value="">Selecione uma opção</option>
-                <option value="ADEGAS CLIMATIZADAS">ADEGAS CLIMATIZADAS</option><option value="AQUECIMENTO SOLAR">AQUECIMENTO SOLAR</option><option value="AR CONDICIONADO">AR CONDICIONADO</option><option value="AUTOMACAO INDUSTRIAL">AUTOMACAO INDUSTRIAL</option><option value="BANHEIRA DE HIDROMASSAGEM">BANHEIRA DE HIDROMASSAGEM</option><option value="BEBEDOURO">BEBEDOURO</option><option value="BOMBAS DE CALOR">BOMBAS DE CALOR</option><option value="CALDEIRA">CALDEIRA</option><option value="CAMARAS E BALCOES">CAMARAS E BALCOES</option><option value="CHILLER">CHILLER</option><option value="CHOCADEIRAS">CHOCADEIRAS</option><option value="CHOPEIRAS" selected="">CHOPEIRAS</option><option value="CLIMATIZACAO DE AMBIENTE">CLIMATIZACAO DE AMBIENTE</option><option value="CLIMATIZACAO PARA AVIARIOS">CLIMATIZACAO PARA AVIARIOS</option><option value="COMPONENTES E ACESSOR P REFRIG">COMPONENTES E ACESSOR P REFRIG</option><option value="CONTEINERES REFRIGERADOS">CONTEINERES REFRIGERADOS</option><option value="COZINHAS INDUSTRIAIS">COZINHAS INDUSTRIAIS</option><option value="DESUMIDIFICADORES">DESUMIDIFICADORES</option><option value="ENSINO PROFISSIONALIZANTE">ENSINO PROFISSIONALIZANTE</option><option value="ESTUFAS">ESTUFAS</option><option value="FABRICACAO DE RACKS">FABRICACAO DE RACKS</option><option value="FORNOS">FORNOS</option><option value="FREEZER">FREEZER</option><option value="INDUSTRIA ALIMENTICIA">INDUSTRIA ALIMENTICIA</option><option value="INDUSTRIA METALURGICA">INDUSTRIA METALURGICA</option><option value="INSTALACAO E CONSERTO EQUIP">INSTALACAO E CONSERTO EQUIP</option><option value="INSTALACOES ELETRICAS E DE AUTOMACAO">INSTALACOES ELETRICAS E DE AUTOMACAO</option><option value="INSTRUMENTACAO PARA MEDICAO">INSTRUMENTACAO PARA MEDICAO</option><option value="MAQUINAS E EQUIP P BEBIDA">MAQUINAS E EQUIP P BEBIDA</option><option value="MAQUINAS E EQUIPAMENTOS">MAQUINAS E EQUIPAMENTOS</option><option value="MAQUINAS PARA CALCADOS">MAQUINAS PARA CALCADOS</option><option value="MAQUINAS PARA LABORATORIO">MAQUINAS PARA LABORATORIO</option><option value="MAQUINAS PARA SORVETE">MAQUINAS PARA SORVETE</option><option value="MATERIAL ELETRICO">MATERIAL ELETRICO</option><option value="MATERIAL HIDRAULICO">MATERIAL HIDRAULICO</option><option value="MONTADOR DE QUADRO DE COMANDO">MONTADOR DE QUADRO DE COMANDO</option><option value="PISCINAS">PISCINAS</option><option value="PISO AQUECIDO PARA SUINOS">PISO AQUECIDO PARA SUINOS</option><option value="PLUG-IN">PLUG-IN</option><option value="QUEIMADORES A GAS">QUEIMADORES A GAS</option><option value="REFRIGERACAO">REFRIGERACAO</option><option value="REFRIGERACAO AUTOMOTIVA">REFRIGERACAO AUTOMOTIVA</option><option value="REFRIGERACAO PARA CAMINHOES">REFRIGERACAO PARA CAMINHOES</option><option value="REFRIGERACAO SEG NAVAL">REFRIGERACAO SEG NAVAL</option><option value="RESFRIADOR DE LEITE">RESFRIADOR DE LEITE</option><option value="RESFRIADOR PARA AQUARIO">RESFRIADOR PARA AQUARIO</option><option value="SAUNAS">SAUNAS</option><option value="TORRES DE RESFRIAMENTO">TORRES DE RESFRIAMENTO</option><option value="UMIDIFICADORES">UMIDIFICADORES</option><option value="UNIDADES FRIGORIFICAS">UNIDADES FRIGORIFICAS</option>
-              </select>
-            </div>
-
-            <div class="field-wrap" id="field-wrap-segment">
-              <label>Segmento *</label>
-              <div class="radio-group" role="group" aria-label="Segmento" id="segment-group">
-                <label class="radio-chip">
-                  <input type="radio" name="segment" value="ASSISTENCIA TECNICA" required>
-                  <span>Assistência Técnica</span>
-                </label>
-                <label class="radio-chip">
-                  <input type="radio" name="segment" value="CONSUMIDOR">
-                  <span>Consumidor</span>
-                </label>
-                <label class="radio-chip">
-                  <input type="radio" name="segment" value="INDUSTRIA">
-                  <span>Indústria</span>
-                </label>
-                <label class="radio-chip">
-                  <input type="radio" name="segment" value="INSTALADOR">
-                  <span>Instalador</span>
-                </label>
-                <label class="radio-chip">
-                  <input type="radio" name="segment" value="REVENDA">
-                  <span>Revenda</span>
-                </label>
-              </div>
-            </div>
-
-            <div class="field-wrap">
-              <label for="consultant">Consultor Técnico Responsável *</label>
-              <select required="" name="consultant" id="consultant">
-                <option value="">Selecione uma opção</option>
-                <option value="Carlos Mota">Carlos Mota</option><option value="Cristiano Henriqson Leste">Cristiano Henriqson Leste</option><option value="Daniel Becker">Daniel Becker</option><option value="Daniel Izaguirre">Daniel Izaguirre</option><option value="Fabiano Damiao">Fabiano Damiao</option><option value="Fabio Benevite">Fabio Benevite</option><option value="Fabio Tedesco">Fabio Tedesco</option><option value="Fabricio Silva" selected="">Fabricio Silva</option><option value="Felipe Pereira">Felipe Pereira</option><option value="Gabriel dos Santos">Gabriel dos Santos</option><option value="Gabriela da Silva Wolff">Gabriela da Silva Wolff</option><option value="Guilherme Simoes Velasques">Guilherme Simoes Velasques</option><option value="Ian Bauer">Ian Bauer</option><option value="Igor Rogerio Rollsing">Igor Rogerio Rollsing</option><option value="Jordana Dutra">Jordana Dutra</option><option value="Julio dos Santos Jacobsen">Julio dos Santos Jacobsen</option><option value="Julio Luiz Meyer">Julio Luiz Meyer</option><option value="Tiago Barbosa">Tiago Barbosa</option><option value="vendas">vendas</option><option value="Victor Santos">Victor Santos</option>
-              </select>
-            </div>
-          </div>
+        <div id="formFields" class="form-grid"></div>
 
           <div class="form-actions">
             <button type="button" id="prevBtn" class="ghost-btn" data-i18n="previous" style="visibility: visible;">Voltar</button>
@@ -201,6 +129,7 @@
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
   <script type="module" src="/js/app.js"></script>
 
 

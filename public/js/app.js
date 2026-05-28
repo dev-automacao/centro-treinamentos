@@ -86,7 +86,7 @@ const i18n = {
 // ─── Definição das Etapas ─────────────────────────────────────────────────────
 const STEPS = [
   {
-    title: { pt: "Cadastro base", en: "Base registration", es: "Registro base" },
+    title: { pt: "Relação conosco", en: "Relationship with us", es: "Relación con nosotros" },
     description: {
       pt: "Informações principais de identificação.",
       en: "Main identification information.",
@@ -104,7 +104,7 @@ const STEPS = [
           { value: "GERAL", label: { pt: "Geral",en: "General",es: "General"} },
         ],
       },
-      { id: "token", label: { pt: "Qual o token enviado pelo parceiro? *", en: "Which token is sent by the partner? *", es: "¿Qué token es enviado por el socio? *" }, type: "text", required: true, validateToken: true },
+      { id: "token", label: { pt: "Qual o token enviado pelo parceiro? *", en: "Which token is sent by the partner? *", es: "¿Qué token es enviado por el socio? *" }, type: "text", required: true, validateToken: true, uppercase: true },
     ],
   },
     {
@@ -181,7 +181,7 @@ const STEPS = [
     },
     fields: [
       { id: "turmas", label: { pt: "Turmas *", en: "Classes *", es: "Clases *" }, type: "select", options: [], required: true },
-      { id: "modulos", label: { pt: "Módulos *", en: "Modules *", es: "Módulos *" }, type: "select", options: [] ,required: true},
+      { id: "modulos", label: { pt: "Módulos *", en: "Modules *", es: "Módulos *" }, type: "select", options: [] ,required: true, multiple: true},
     ],
   },
   {
@@ -246,9 +246,6 @@ function applyMask(value, mask) {
     }
     return digits.slice(0, 11).replace(/^(\d{2})(\d{5})(\d{0,4})/, "($1) $2-$3").trim();
   }
-  if (mask === "cep") {
-    return digits.slice(0, 8).replace(/^(\d{5})(\d)/, "$1-$2");
-  }
   return value;
 }
 
@@ -299,8 +296,33 @@ function renderFields() {
 
       if (f.type === "select") {
         const isLoading = (f.id === "turmas" && isFetchingTurmas) || (f.id === "modulos" && isFetchingModulos);
-        const placeholder = isLoading ? t("loading") : "Selecione uma opção";
+        
+        if (f.multiple && !isLoading) {
+          const chips = (f.options || [])
+            .map((o) => {
+              const isObj = typeof o === "object" && o !== null;
+              const optVal = isObj ? o.value : o;
+              let optLabel = isObj ? o.label : o;
+              if (optLabel && typeof optLabel === "object") optLabel = optLabel[currentLang] || optLabel.pt || optVal;
+              
+              const isSelected = Array.isArray(val) ? val.includes(optVal) : false;
+              
+              return `<label class="checkbox-chip${isSelected ? " checkbox-chip--selected" : ""}">
+                <input type="checkbox" name="${f.id}" value="${optVal}"${isSelected ? " checked" : ""}>
+                <span>${optLabel}</span>
+              </label>`;
+            })
+            .join("");
 
+          return `<div class="field-wrap ${fullClass}" id="field-wrap-${f.id}">
+            <label>${label}</label>
+            <div class="checkbox-group" id="${f.id}-group">
+              ${chips || `<p class="helper">${currentLang === 'pt' ? 'Nenhum item disponível' : 'No items available'}</p>`}
+            </div>
+          </div>`;
+        }
+
+        const placeholder = isLoading ? t("loading") : "Selecione uma opção";
         const opts = (f.options || [])
           .map((o) => {
             const isObj = typeof o === "object" && o !== null;
@@ -309,7 +331,6 @@ function renderFields() {
             
             // Suporte para traduções ou labels simples vindo da API
             if (optLabel && typeof optLabel === "object") optLabel = optLabel[currentLang] || optLabel.pt || optVal;
-            
             return `<option value="${optVal}"${val === optVal ? " selected" : ""}>${optLabel}</option>`;
           })
           .join("");
@@ -356,10 +377,11 @@ function renderFields() {
           type="${f.type}"
           id="${f.id}"
           name="${f.id}"
-          value="${val}"
+          value="${f.uppercase ? val.toUpperCase() : val}"
           ${f.required ? "required" : ""}
           ${(f.validateEmail || f.validateToken) ? `aria-describedby="${errorId}"` : ""}
-          autocomplete="off">
+          autocomplete="off"
+          ${f.uppercase ? 'style="text-transform: uppercase;"' : ''}>
         ${(f.validateEmail || f.validateToken) ? `<span class="input-error-msg" id="${errorId}" role="alert"></span>` : ""}
       </div>`;
     })
@@ -381,6 +403,19 @@ function renderFields() {
       return; // só sai do radio
     }
 
+    if (f.type === "select" && f.multiple) {
+      const group = document.getElementById(`${f.id}-group`);
+      if (!group) return;
+      group.querySelectorAll(`input[type="checkbox"]`).forEach((cb) => {
+        cb.addEventListener("change", () => {
+          const checkedVals = Array.from(group.querySelectorAll("input:checked")).map(i => i.value);
+          formData[f.id] = checkedVals;
+          cb.closest(".checkbox-chip").classList.toggle("checkbox-chip--selected", cb.checked);
+        });
+      });
+      return;
+    }
+
     // Para todos os outros campos (incluindo token)
     const el = document.getElementById(f.id);
     if (!el) return;
@@ -390,6 +425,10 @@ function renderFields() {
       if (f.mask) {
         v = applyMask(v, f.mask);
         el.value = v;
+      }
+      if (f.uppercase) {
+        v = v.toUpperCase();
+        el.value = v; // Atualiza o valor exibido no campo
       }
       formData[f.id] = v;
 
@@ -418,6 +457,7 @@ function renderFields() {
 
       // Se mudar a turma, busca os módulos
       if (f.id === "turmas" && el.value) {
+        formData["modulos"] = []; // Limpa seleções anteriores ao trocar a turma
         fetchModulosData(el.value);
       }
     });
@@ -429,7 +469,12 @@ function renderReview(container) {
   const rows = allFields
     .map((f) => {
       const label = f.label[currentLang] || f.label.pt;
-      const val = formData[f.id] || "—";
+      let val = formData[f.id];
+      
+      // Tratamento para exibir arrays (módulos) de forma amigável no resumo
+      if (Array.isArray(val)) val = val.length > 0 ? val.join(", ") : "—";
+      else val = val || "—";
+
       return `<div class="field-wrap">
         <label>${label}</label>
         <p style="margin:0;font-size:0.92rem;color:var(--ink-900);padding:0.62rem 0.7rem;border:1px solid var(--line-200);border-radius:10px;background:color-mix(in srgb,var(--panel) 95%,transparent)">${val}</p>
@@ -486,6 +531,19 @@ function validateCurrentStep() {
       return;
     }
 
+    if (f.type === "select" && f.multiple) {
+      const wrap = document.getElementById(`field-wrap-${f.id}`);
+      const group = document.getElementById(`${f.id}-group`);
+      if (wrap) wrap.classList.remove("invalid-group");
+      
+      const isEmpty = !Array.isArray(formData[f.id]) || formData[f.id].length === 0;
+      if (f.required && isEmpty) {
+        if (wrap) wrap.classList.add("invalid-group");
+        valid = false;
+      }
+      return;
+    }
+
         const el = document.getElementById(f.id);
     if (!el) return;
     el.classList.remove("invalid");
@@ -497,7 +555,12 @@ function validateCurrentStep() {
         valid = false;
       }
     } else {
-      if (f.required && !el.value.trim()) {
+      const isSelectMultiple = f.type === "select" && f.multiple;
+      const isEmpty = isSelectMultiple 
+        ? (!Array.isArray(formData[f.id]) || formData[f.id].length === 0)
+        : !el.value.trim();
+
+      if (f.required && isEmpty) {
         el.classList.add("invalid");
         valid = false;
         return;
@@ -565,15 +628,61 @@ function goPrev() {
 }
 
 // ─── Status ───────────────────────────────────────────────────────────────────
-function showStatus(msg, type = "") {
+let statusMessageTimeout;
+
+function showStatus(messageData, type = "", isPermanent = false) {
   const el = document.getElementById("statusMessage");
   if (!el) return;
-  el.textContent = msg;
-  el.className = "status-message " + type;
+
+  clearTimeout(statusMessageTimeout);
+  el.classList.remove('show', 'success', 'error');
+  el.innerHTML = '';
+
+  if (type) { // Adiciona a classe apenas se 'type' não for uma string vazia
+    el.classList.add(type);
+  }
+
+  if (type === 'success' && typeof messageData === 'object' && messageData.title) {
+    el.innerHTML = `
+      <div class="status-message-content">
+        <div class="status-icon-wrapper">${messageData.icon}</div>
+        <div class="status-text-wrapper">
+          <h3 class="status-title">${messageData.title}</h3>
+          <p class="status-description">${messageData.message}</p>
+          ${isPermanent ? '<button id="startNewRegistrationBtn" class="primary-btn" style="margin-top: 1rem;">Iniciar Novo Cadastro</button>' : ''}
+        </div>
+      </div>
+    `;
+    if (isPermanent) {
+      setTimeout(() => {
+        document.getElementById("startNewRegistrationBtn")?.addEventListener("click", () => {
+          location.reload();
+        });
+      }, 100);
+    }
+  } else {
+    // Fallback para mensagens simples (strings de erro)
+    el.textContent = typeof messageData === 'string' ? messageData : (messageData.message || "Erro");
+  }
+
+  // Força o navegador a processar o layout para que a animação de opacidade funcione
+  void el.offsetWidth;
+  el.classList.add('show');
+
+  if (!isPermanent) {
+    statusMessageTimeout = setTimeout(() => {
+      el.classList.remove('show');
+    }, 5000);
+  }
 }
 
 function clearStatus() {
-  showStatus("");
+  clearTimeout(statusMessageTimeout);
+  const el = document.getElementById("statusMessage");
+  if (el) {
+    el.classList.remove('show', 'success', 'error');
+    el.innerHTML = '';
+  }
 }
 
 // ─── Modal de confirmação ─────────────────────────────────────────────────────
@@ -601,12 +710,17 @@ async function handleSubmit() {
     currentLang === "pt" ? "Enviando..." : currentLang === "en" ? "Sending..." : "Enviando...",
     ""
   );
+
+  // Garantia: Certifica que campos múltiplos (como módulos) sejam enviados como Array, mesmo se vazios
+  const payload = { ...formData };
+  if (!Array.isArray(payload.modulos)) payload.modulos = [];
+
   try {
     // Substitua a URL abaixo pelo seu endpoint real
     const res = await fetch("/api/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
+      body: JSON.stringify(payload),
     });
     if (res.ok) {
       handleSuccessfulSubmission(); // Chama a nova função para lidar com o sucesso
@@ -628,7 +742,21 @@ function handleSuccessfulSubmission() {
   }
   if (statusMessageWrapper) {
     statusMessageWrapper.style.display = 'block'; // Garante que o wrapper da mensagem de status esteja visível
-    showStatus(i18n[currentLang].submitSuccess, "success", true); // Exibe a mensagem de sucesso permanentemente
+    // Pequeno delay para garantir que a transição CSS funcione após a mudança de display
+    requestAnimationFrame(() => {
+      showStatus(i18n[currentLang].submitSuccess, "success", true); // Exibe a mensagem de sucesso permanentemente
+
+      // Dispara a animação de confete
+      if (window.confetti) {
+        confetti({
+          particleCount: 150,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#007a47', '#00a15c', '#ffffff'], // Cores da marca
+          disableForReducedMotion: true // Respeita usuários que preferem menos movimento
+        });
+      }
+    });
   }
 }
 
@@ -649,7 +777,7 @@ async function fetchTurmasData() {
       if (turmasStep) {
         const field = turmasStep.fields.find(f => f.id === 'turmas');
         field.options = Array.isArray(data.data) 
-          ? data.data.map(t => ({ value: t.id, label: t.id + ' - '+t.name })) 
+          ? data.data.map(t => ({ value: t.id || t.FG_TRAININGCLASSID, label: (t.id || t.FG_TRAININGCLASSID) + ' - ' + (t.name || t.NAME) })) 
           : [];
         // Se estivermos na etapa das turmas, renderiza novamente
         if (STEPS[currentStep] === turmasStep) renderFields();
@@ -679,8 +807,8 @@ async function fetchModulosData(classId) {
         // Mapeia os dados vindo da API (ajuste as chaves conforme o retorno do seu backend)
         field.options = Array.isArray(data.data) 
           ? data.data.map(m => ({ 
-              value: m.id, 
-              label: m.id + " - "+ m.name 
+              value: m.id || m.FG_MODULEID, 
+              label: (m.id || m.FG_MODULEID) + " - " + (m.name || m.NAME) 
             })) 
           : [];
           

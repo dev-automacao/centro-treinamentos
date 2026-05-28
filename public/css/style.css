@@ -247,19 +247,6 @@ body {
   transition: width 180ms ease-out;
 }
 
-.draft-status {
-  margin: 0.6rem 0 0;
-  min-height: 1rem;
-  font-size: 0.8rem;
-  color: var(--ink-500);
-  opacity: 0.92;
-}
-
-.draft-status[data-visible="false"] {
-  min-height: 0;
-  margin-top: 0;
-}
-
 .control-group {
   display: flex;
   gap: 0.55rem;
@@ -459,13 +446,15 @@ button:focus {
   color: var(--ink-500);
 }
 
-.radio-group {
+.radio-group,
+.checkbox-group {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
 }
 
-.radio-chip {
+.radio-chip,
+.checkbox-chip {
   border: 1px solid var(--line-200);
   border-radius: 999px;
   padding: 0.46rem 0.9rem;
@@ -481,20 +470,23 @@ button:focus {
   user-select: none;
 }
 
-.radio-chip:hover {
+.radio-chip:hover,
+.checkbox-chip:hover {
   border-color: var(--fg-green-500);
   background: color-mix(in srgb, var(--fg-green-100) 60%, transparent);
   color: var(--fg-green-700);
 }
 
-.radio-chip--selected {
+.radio-chip--selected,
+.checkbox-chip--selected {
   border-color: var(--fg-green-500);
   background: var(--fg-green-100);
   color: var(--fg-green-700);
 }
 
 /* Esconde o input nativo mas mantém acessibilidade */
-.radio-chip input[type="radio"] {
+.radio-chip input[type="radio"],
+.checkbox-chip input[type="checkbox"] {
   appearance: none;
   -webkit-appearance: none;
   width: 15px;
@@ -506,6 +498,16 @@ button:focus {
   margin: 0;
   transition: border-color 120ms ease, background 120ms ease;
   cursor: pointer;
+}
+
+.checkbox-chip input[type="checkbox"] {
+  border-radius: 4px; /* Checkbox é quadrado, rádio é redondo */
+}
+
+.checkbox-chip input[type="checkbox"]:checked {
+  border-color: var(--fg-green-500);
+  background: var(--fg-green-500) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M20.285 2l-11.285 11.567-5.286-5.011-3.714 3.716 9 8.728 15-15z"/></svg>') no-repeat center;
+  background-size: 10px;
 }
 
 .radio-chip input[type="radio"]:checked {
@@ -523,7 +525,8 @@ button:focus {
   color: var(--danger);
 }
 
-.invalid-group .radio-group {
+.invalid-group .radio-group,
+.invalid-group .checkbox-group {
   padding: 0.4rem;
   border-radius: 12px;
   border: 1px solid var(--danger);
@@ -625,6 +628,13 @@ button:focus {
 }
 
 /* --- Status Message Enhancements --- */
+#statusMessageWrapper {
+  min-height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .status-message {
   margin: 0.9rem 0 0;
   min-height: 1.2rem;
