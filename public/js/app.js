@@ -18,10 +18,14 @@ const i18n = {
     confirmTitle: "Confirmação",
     confirmCancel: "Cancelar",
     confirmConfirm: "Confirmar",
-    draftSaved: "Rascunho salvo.",
-    draftRecovered: "Rascunho recuperado.",
-    submitSuccess: "Cadastro enviado com sucesso! Em breve entraremos em contato.",
+    submitSuccess: {
+      title: "Cadastro enviado com sucesso!",
+      message: "Agradecemos o seu interesse! Em breve entraremos em contato com mais informações sobre a sua inscrição.",
+      icon: '<svg viewBox="0 0 24 24"><path d="M5 12.5 9.2 16.7 19 7"></path></svg>' // Ícone de checkmark
+    },
     submitError: "Erro ao enviar. Tente novamente.",
+    loading: "Carregando...",
+    invalidToken: "Token inválido.",
   },
   en: {
     brandEyebrow: "Registration Platform",
@@ -41,10 +45,14 @@ const i18n = {
     confirmTitle: "Confirmation",
     confirmCancel: "Cancel",
     confirmConfirm: "Confirm",
-    draftSaved: "Draft saved.",
-    draftRecovered: "Draft recovered.",
-    submitSuccess: "Registration submitted successfully! We will contact you soon.",
+    submitSuccess: {
+      title: "Registration submitted successfully!",
+      message: "Thank you for your interest! We will contact you shortly with more information about your enrollment.",
+      icon: '<svg viewBox="0 0 24 24"><path d="M5 12.5 9.2 16.7 19 7"></path></svg>'
+    },
     submitError: "Error sending. Please try again.",
+    loading: "Loading...",
+    invalidToken: "Invalid token.",
   },
   es: {
     brandEyebrow: "Plataforma de registro",
@@ -64,10 +72,14 @@ const i18n = {
     confirmTitle: "Confirmación",
     confirmCancel: "Cancelar",
     confirmConfirm: "Confirmar",
-    draftSaved: "Borrador guardado.",
-    draftRecovered: "Borrador recuperado.",
-    submitSuccess: "¡Registro enviado con éxito! Pronto nos pondremos en contacto.",
+    submitSuccess: {
+      title: "¡Registro enviado con éxito!",
+      message: "¡Gracias por tu interés! Nos pondremos en contacto contigo en breve con más información sobre tu inscripción.",
+      icon: '<svg viewBox="0 0 24 24"><path d="M5 12.5 9.2 16.7 19 7"></path></svg>'
+    },
     submitError: "Error al enviar. Inténtalo de nuevo.",
+    loading: "Cargando...",
+    invalidToken: "Token inválido.",
   },
 };
 
@@ -89,113 +101,120 @@ const STEPS = [
         full: true,
         options: [
           { value: "PARCEIRO", label: { pt: "Parceiro", en: "Partner", es: "Socio" } },
-          { value: "CONVIDADO", label: { pt: "Convidado",en: "Guest",es: "Invitado"} },
+          { value: "GERAL", label: { pt: "Geral",en: "General",es: "General"} },
         ],
       },
-      { id: "token", label: { pt: "Token", en: "Token", es: "Token" }, type: "text", required: true },
+      { id: "token", label: { pt: "Qual o token enviado pelo parceiro? *", en: "Which token is sent by the partner? *", es: "¿Qué token es enviado por el socio? *" }, type: "text", required: true, validateToken: true },
     ],
   },
-  {
-    title: { pt: "Dados comerciais", en: "Commercial data", es: "Datos comerciales" },
+    {
+    title: { pt: "Inscrição", en: "Enrollment", es: "Inscripción" },
     description: {
-      pt: "Linha de negócio, segmento e consultor responsável.",
-      en: "Line of business, segment and responsible consultant.",
-      es: "Línea de negocio, segmento y consultor responsable.",
+      pt: "Preencha seus dados pessoais e profissionais.",
+      en: "Fill in your personal and professional information.",
+      es: "Complete sus datos personales y profesionales.",
     },
     fields: [
       {
-        id: "lineOfBusiness",
-        label: { pt: "Linha de Negócio *", en: "Line of Business *", es: "Línea de Negocio *" },
-        type: "select",
+        id: "fullName",
+        label: { pt: "Nome Completo *", en: "Full Name *", es: "Nombre Completo *" },
+        type: "text",
         required: true,
         full: true,
-        options: [
-          "ADEGAS CLIMATIZADAS","AQUECIMENTO SOLAR","AR CONDICIONADO","AUTOMACAO INDUSTRIAL",
-          "BANHEIRA DE HIDROMASSAGEM","BEBEDOURO","BOMBAS DE CALOR","CALDEIRA",
-          "CAMARAS E BALCOES","CHILLER","CHOCADEIRAS","CHOPEIRAS","CLIMATIZACAO DE AMBIENTE",
-          "CLIMATIZACAO PARA AVIARIOS","COMPONENTES E ACESSOR P REFRIG","CONTEINERES REFRIGERADOS",
-          "COZINHAS INDUSTRIAIS","DESUMIDIFICADORES","ENSINO PROFISSIONALIZANTE","ESTUFAS",
-          "FABRICACAO DE RACKS","FORNOS","FREEZER","INDUSTRIA ALIMENTICIA","INDUSTRIA METALURGICA",
-          "INSTALACAO E CONSERTO EQUIP","INSTALACOES ELETRICAS E DE AUTOMACAO",
-          "INSTRUMENTACAO PARA MEDICAO","MAQUINAS E EQUIP P BEBIDA","MAQUINAS E EQUIPAMENTOS",
-          "MAQUINAS PARA CALCADOS","MAQUINAS PARA LABORATORIO","MAQUINAS PARA SORVETE",
-          "MATERIAL ELETRICO","MATERIAL HIDRAULICO","MONTADOR DE QUADRO DE COMANDO","PISCINAS",
-          "PISO AQUECIDO PARA SUINOS","PLUG-IN","QUEIMADORES A GAS","REFRIGERACAO",
-          "REFRIGERACAO AUTOMOTIVA","REFRIGERACAO PARA CAMINHOES","REFRIGERACAO SEG NAVAL",
-          "RESFRIADOR DE LEITE","RESFRIADOR PARA AQUARIO","SAUNAS","TORRES DE RESFRIAMENTO",
-          "UMIDIFICADORES","UNIDADES FRIGORIFICAS",
-        ],
       },
-    
       {
-        id: "consultant",
-        label: { pt: "Consultor Técnico Responsável *", en: "Responsible Consultant *", es: "Consultor Responsable *" },
+        id: "cpf",
+        label: { pt: "CPF *", en: "CPF *", es: "CPF *" },
+        type: "text",
+        required: true,
+        mask: "cpf",
+      },
+      {
+        id: "empresa",
+        label: { pt: "Empresa *", en: "Company *", es: "Empresa *" },
         type: "select",
         required: true,
-        options: [
-          "Carlos Mota","Cristiano Henriqson Leste","Daniel Becker","Daniel Izaguirre",
-          "Fabiano Damiao","Fabio Benevite","Fabio Tedesco","Fabricio Silva","Felipe Pereira",
-          "Gabriel dos Santos","Gabriela da Silva Wolff","Guilherme Simoes Velasques",
-          "Ian Bauer","Igor Rogerio Rollsing","Jordana Dutra","Julio dos Santos Jacobsen",
-          "Julio Luiz Meyer","Tiago Barbosa","vendas","Victor Santos",
-        ],
+        options: ["Armacell", "Brahex", "Bitzer", "Chemours", "DuFrio", "Frigelar", "Nacional Frio", "Soma"],
+      },
+      {
+        id: "segmento",
+        label: { pt: "Segmento *", en: "Segment *", es: "Segmento *" },
+        type: "select",
+        required: true,
+        options: ["Aquecimento", "Ventilação", "Ar Condicionado", "Refrigeração"],
+      },
+      {
+        id: "atuacao",
+        label: { pt: "Atuação *", en: "Field of Work *", es: "Actuación *" },
+        type: "select",
+        required: true,
+        options: ["Residencial", "Comercial", "Industrial"],
+      },
+      {
+        id: "cidade",
+        label: { pt: "Cidade *", en: "City *", es: "Ciudad *" },
+        type: "text",
+        required: true,
+      },
+      {
+        id: "telefone",
+        label: { pt: "Telefone / WhatsApp *", en: "Phone / WhatsApp *", es: "Teléfono / WhatsApp *" },
+        type: "tel",
+        required: true,
+        mask: "phone",
+      },
+      {
+        id: "email",
+        label: { pt: "E-mail *", en: "E-mail *", es: "Correo electrónico *" },
+        type: "email",
+        required: true,
+        validateEmail: true,
       },
     ],
   },
   {
-    title: { pt: "Dados gerais", en: "General data", es: "Datos generales" },
+    title: { pt: "Turmas e módulos", en: "Course classes", es: "Clases del curso" },
     description: {
-      pt: "Informações complementares da empresa.",
-      en: "Complementary company information.",
-      es: "Información complementaria de la empresa.",
+      pt: "",
+      en: "",
+      es: "",
     },
     fields: [
-      { id: "stateRegistration", label: { pt: "Inscrição Estadual", en: "State Registration", es: "Inscripción Estatal" }, type: "text" },
-      { id: "municipalRegistration", label: { pt: "Inscrição Municipal", en: "Municipal Registration", es: "Inscripción Municipal" }, type: "text" },
-      { id: "employeeCount", label: { pt: "Nº de Funcionários", en: "Employee Count", es: "Nº de Empleados" }, type: "number" },
-      { id: "annualRevenue", label: { pt: "Faturamento Anual (R$)", en: "Annual Revenue (R$)", es: "Facturación Anual (R$)" }, type: "text" },
+      { id: "turmas", label: { pt: "Turmas *", en: "Classes *", es: "Clases *" }, type: "select", options: [], required: true },
+      { id: "modulos", label: { pt: "Módulos *", en: "Modules *", es: "Módulos *" }, type: "select", options: [] ,required: true},
     ],
   },
   {
-    title: { pt: "Endereço principal", en: "Main address", es: "Dirección principal" },
+    title: { pt: "Termo de Inscrição", en: "Enrollment Terms", es: "Término de Inscripción" },
     description: {
-      pt: "Endereço da sede ou filial principal.",
-      en: "Headquarters or main branch address.",
-      es: "Dirección de la sede o sucursal principal.",
+      pt: "Leia e aceite os termos para concluir sua inscrição.",
+      en: "Read and accept the terms to complete your registration.",
+      es: "Lea y acepte los términos para completar su registro.",
     },
     fields: [
-      { id: "zipCode", label: { pt: "CEP *", en: "ZIP Code *", es: "Código Postal *" }, type: "text", required: true, mask: "cep" },
-      { id: "street", label: { pt: "Logradouro *", en: "Street *", es: "Calle *" }, type: "text", required: true, full: true },
-      { id: "number", label: { pt: "Número *", en: "Number *", es: "Número *" }, type: "text", required: true },
-      { id: "complement", label: { pt: "Complemento", en: "Complement", es: "Complemento" }, type: "text" },
-      { id: "neighborhood", label: { pt: "Bairro *", en: "Neighborhood *", es: "Barrio *" }, type: "text", required: true },
-      { id: "city", label: { pt: "Cidade *", en: "City *", es: "Ciudad *" }, type: "text", required: true },
-      { id: "state", label: { pt: "Estado *", en: "State *", es: "Estado *" }, type: "text", required: true },
+      {
+        id: "termImage",
+        label: {
+          pt: "Declaro que li e concordo com a cessão de direitos de imagem",
+          en: "I declare that I have read and agree to the assignment of image rights",
+          es: "Declaro que he leído y acepto la cesión de derechos de imagen"
+        },
+        type: "checkbox",
+        required: true,
+        full: true
+      },
+      {
+        id: "termCosts",
+        label: {
+          pt: "Declaro que li e concordo que o inscrito é responsável pelos seus próprios gastos como passagens, hospedagens e afins.",
+          en: "I declare that I have read and agree that the enrollee is responsible for their own expenses.",
+          es: "Declaro que he leído y acepto que el inscrito es responsable de sus propios gastos."
+        },
+        type: "checkbox",
+        required: true,
+        full: true
+      }
     ],
-  },
-  {
-    title: { pt: "Contato e NFE", en: "Contact & Invoice", es: "Contacto y Factura" },
-    description: {
-      pt: "Dados de contato e informações para nota fiscal.",
-      en: "Contact data and invoice information.",
-      es: "Datos de contacto e información de factura.",
-    },
-    fields: [
-      { id: "contactName", label: { pt: "Nome do Contato *", en: "Contact Name *", es: "Nombre del Contacto *" }, type: "text", required: true },
-      { id: "contactEmail", label: { pt: "E-mail do Contato *", en: "Contact Email *", es: "Correo del Contacto *" }, type: "email", required: true },
-      { id: "contactPhone", label: { pt: "Telefone do Contato *", en: "Contact Phone *", es: "Teléfono del Contacto *" }, type: "tel", required: true, mask: "phone" },
-      { id: "nfeEmail", label: { pt: "E-mail para NFE", en: "Invoice Email", es: "Correo para Factura" }, type: "email" },
-    ],
-  },
-  {
-    title: { pt: "Revisão final", en: "Final review", es: "Revisión final" },
-    description: {
-      pt: "Revise os dados antes de enviar.",
-      en: "Review your data before submitting.",
-      es: "Revisa los datos antes de enviar.",
-    },
-    fields: [], // gerado dinamicamente
-    isReview: true,
   },
 ];
 
@@ -204,8 +223,8 @@ let currentStep = 0;
 let currentLang = "pt";
 let formData = {};
 let pendingAction = null;
-
-const DRAFT_KEY = "fg_registration_draft";
+let isFetchingTurmas = false;
+let isFetchingModulos = false;
 
 // ─── Utilitários ──────────────────────────────────────────────────────────────
 function t(key) {
@@ -214,13 +233,12 @@ function t(key) {
 
 function applyMask(value, mask) {
   const digits = value.replace(/\D/g, "");
-  if (mask === "cnpj") {
+  if (mask === "cpf") {
     return digits
-      .slice(0, 14)
-      .replace(/^(\d{2})(\d)/, "$1.$2")
-      .replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3")
-      .replace(/\.(\d{3})(\d)/, ".$1/$2")
-      .replace(/(\d{4})(\d)/, "$1-$2");
+      .slice(0, 11)
+      .replace(/^(\d{3})(\d)/, "$1.$2")
+      .replace(/^(\d{3})\.(\d{3})(\d)/, "$1.$2.$3")
+      .replace(/\.(\d{3})(\d)/, ".$1-$2");
   }
   if (mask === "phone") {
     if (digits.length <= 10) {
@@ -232,39 +250,6 @@ function applyMask(value, mask) {
     return digits.slice(0, 8).replace(/^(\d{5})(\d)/, "$1-$2");
   }
   return value;
-}
-
-function saveDraft() {
-  localStorage.setItem(DRAFT_KEY, JSON.stringify({ step: currentStep, data: formData }));
-  showDraftStatus(t("draftSaved"));
-}
-
-function loadDraft() {
-  try {
-    const raw = localStorage.getItem(DRAFT_KEY);
-    if (!raw) return false;
-    const saved = JSON.parse(raw);
-    formData = saved.data || {};
-    currentStep = saved.step || 0;
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-function clearDraft() {
-  localStorage.removeItem(DRAFT_KEY);
-}
-
-function showDraftStatus(msg) {
-  const el = document.getElementById("draftStatus");
-  if (!el) return;
-  el.textContent = msg;
-  el.dataset.visible = "true";
-  clearTimeout(el._timeout);
-  el._timeout = setTimeout(() => {
-    el.dataset.visible = "false";
-  }, 3000);
 }
 
 // ─── Render ───────────────────────────────────────────────────────────────────
@@ -313,13 +298,25 @@ function renderFields() {
       const fullClass = f.full ? "full" : "";
 
       if (f.type === "select") {
-        const opts = f.options
-          .map((o) => `<option value="${o}"${val === o ? " selected" : ""}>${o}</option>`)
+        const isLoading = (f.id === "turmas" && isFetchingTurmas) || (f.id === "modulos" && isFetchingModulos);
+        const placeholder = isLoading ? t("loading") : "Selecione uma opção";
+
+        const opts = (f.options || [])
+          .map((o) => {
+            const isObj = typeof o === "object" && o !== null;
+            const optVal = isObj ? o.value : o;
+            let optLabel = isObj ? o.label : o;
+            
+            // Suporte para traduções ou labels simples vindo da API
+            if (optLabel && typeof optLabel === "object") optLabel = optLabel[currentLang] || optLabel.pt || optVal;
+            
+            return `<option value="${optVal}"${val === optVal ? " selected" : ""}>${optLabel}</option>`;
+          })
           .join("");
-        return `<div class="field-wrap ${fullClass}">
+        return `<div class="field-wrap ${fullClass} ${isLoading ? 'loading-select' : ''}">
           <label for="${f.id}">${label}</label>
-          <select id="${f.id}" name="${f.id}"${f.required ? " required" : ""}>
-            <option value="">Selecione uma opção</option>${opts}
+          <select id="${f.id}" name="${f.id}"${f.required ? " required" : ""}${isLoading ? " disabled" : ""}>
+            <option value="">${placeholder}</option>${opts}
           </select>
         </div>`;
       }
@@ -341,16 +338,29 @@ function renderFields() {
         </div>`;
       }
 
-      // Campo normal (text, email, number, etc) - incluindo TOKEN
+      if (f.type === "checkbox") {
+        const checked = val === true ? " checked" : "";
+        return `<div class="field-wrap ${fullClass} checkbox-wrap">
+          <label class="checkbox-label" for="${f.id}">
+            <input type="checkbox" id="${f.id}" name="${f.id}" ${checked} ${f.required ? "required" : ""}>
+            <span>${label}</span>
+          </label>
+        </div>`;
+      }
+
+            // Campo normal (text, email, tel, number, etc)
+      const errorId = `${f.id}-error`;
       return `<div class="field-wrap ${fullClass}">
         <label for="${f.id}">${label}</label>
-        <input 
-          type="${f.type}" 
-          id="${f.id}" 
-          name="${f.id}" 
-          value="${val}" 
-          ${f.required ? " required" : ""} 
+        <input
+          type="${f.type}"
+          id="${f.id}"
+          name="${f.id}"
+          value="${val}"
+          ${f.required ? "required" : ""}
+          ${(f.validateEmail || f.validateToken) ? `aria-describedby="${errorId}"` : ""}
           autocomplete="off">
+        ${(f.validateEmail || f.validateToken) ? `<span class="input-error-msg" id="${errorId}" role="alert"></span>` : ""}
       </div>`;
     })
     .join("");
@@ -366,7 +376,6 @@ function renderFields() {
             chip.classList.toggle("radio-chip--selected", chip.querySelector("input").checked);
           });
           formData[f.id] = radio.value;
-          saveDraft();
         });
       });
       return; // só sai do radio
@@ -376,19 +385,41 @@ function renderFields() {
     const el = document.getElementById(f.id);
     if (!el) return;
 
-    el.addEventListener("input", () => {
+        el.addEventListener("input", () => {
       let v = el.value;
       if (f.mask) {
         v = applyMask(v, f.mask);
         el.value = v;
       }
       formData[f.id] = v;
-      saveDraft();
+
+      // Limpa erro de e-mail em tempo real
+      if (f.validateEmail) {
+        const errSpan = document.getElementById(`${f.id}-error`);
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (emailRegex.test(v.trim())) {
+          el.classList.remove("invalid");
+          if (errSpan) errSpan.textContent = "";
+        }
+      }
+
+      // Limpa erro de token em tempo real
+      if (f.validateToken) {
+        const errSpan = document.getElementById(`${f.id}-error`);
+        if (v.trim().startsWith("FG-")) {
+          el.classList.remove("invalid");
+          if (errSpan) errSpan.textContent = "";
+        }
+      }
     });
 
     el.addEventListener("change", () => {
       formData[f.id] = el.value;
-      saveDraft();
+
+      // Se mudar a turma, busca os módulos
+      if (f.id === "turmas" && el.value) {
+        fetchModulosData(el.value);
+      }
     });
   });
 }
@@ -455,12 +486,50 @@ function validateCurrentStep() {
       return;
     }
 
-    const el = document.getElementById(f.id);
+        const el = document.getElementById(f.id);
     if (!el) return;
     el.classList.remove("invalid");
-    if (f.required && !el.value.trim()) {
-      el.classList.add("invalid");
-      valid = false;
+    el.removeAttribute("data-error");
+
+    if (f.type === "checkbox") {
+      if (f.required && !el.checked) {
+        el.classList.add("invalid");
+        valid = false;
+      }
+    } else {
+      if (f.required && !el.value.trim()) {
+        el.classList.add("invalid");
+        valid = false;
+        return;
+      }
+    }
+
+        if (f.validateEmail && el.value.trim()) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const errSpan = document.getElementById(`${f.id}-error`);
+      if (!emailRegex.test(el.value.trim())) {
+        el.classList.add("invalid");
+        const msg = currentLang === "en"
+          ? "Enter a valid e-mail address."
+          : currentLang === "es"
+          ? "Ingrese un correo electrónico válido."
+          : "Informe um e-mail válido.";
+        if (errSpan) errSpan.textContent = msg;
+        valid = false;
+      } else {
+        if (errSpan) errSpan.textContent = "";
+      }
+    }
+
+    if (f.validateToken && el.value.trim()) {
+      const errSpan = document.getElementById(`${f.id}-error`);
+      if (!el.value.trim().startsWith("FG-")) {
+        el.classList.add("invalid");
+        if (errSpan) errSpan.textContent = t("invalidToken");
+        valid = false;
+      } else {
+        if (errSpan) errSpan.textContent = "";
+      }
     }
   });
   return valid;
@@ -540,30 +609,102 @@ async function handleSubmit() {
       body: JSON.stringify(formData),
     });
     if (res.ok) {
-      clearDraft();
-      showStatus(t("submitSuccess"), "success");
+      handleSuccessfulSubmission(); // Chama a nova função para lidar com o sucesso
     } else {
       showStatus(t("submitError"), "error");
     }
   } catch {
-    // Sem endpoint real ainda — apenas mostra sucesso para demonstração
-    clearDraft();
-    showStatus(t("submitSuccess"), "success");
+    showStatus(t("submitError"), "error");
+  }
+}
+
+// Nova função para lidar com o envio bem-sucedido: esconde o formulário e mostra a mensagem permanente
+function handleSuccessfulSubmission() {
+  const wizardContent = document.getElementById("wizardContent");
+  const statusMessageWrapper = document.getElementById("statusMessageWrapper");
+
+  if (wizardContent) {
+    wizardContent.style.display = 'none'; // Oculta todo o conteúdo do wizard
+  }
+  if (statusMessageWrapper) {
+    statusMessageWrapper.style.display = 'block'; // Garante que o wrapper da mensagem de status esteja visível
+    showStatus(i18n[currentLang].submitSuccess, "success", true); // Exibe a mensagem de sucesso permanentemente
+  }
+}
+
+// ─── Busca de Dados Externos ──────────────────────────────────────────────────
+async function fetchTurmasData() {
+  isFetchingTurmas = true;
+  // Se o usuário já estiver na etapa das turmas, renderiza o estado de loading
+  const turmasStep = STEPS.find(s => s.fields.some(f => f.id === 'turmas'));
+  if (STEPS[currentStep] === turmasStep) renderFields();
+
+  try {
+    const response = await fetch('/api/turmas?v=' + Date.now());
+
+    if (response.ok && !response.bodyUsed) {
+      const data = await response.json();
+
+      const turmasStep = STEPS.find(s => s.fields.some(f => f.id === 'turmas'));
+      if (turmasStep) {
+        const field = turmasStep.fields.find(f => f.id === 'turmas');
+        field.options = Array.isArray(data.data) 
+          ? data.data.map(t => ({ value: t.id, label: t.id + ' - '+t.name })) 
+          : [];
+        // Se estivermos na etapa das turmas, renderiza novamente
+        if (STEPS[currentStep] === turmasStep) renderFields();
+      }
+    }
+  } catch (err) {
+    console.error("Erro ao carregar turmas:", err);
+  } finally {
+    isFetchingTurmas = false;
+    if (STEPS[currentStep] === turmasStep) renderFields();
+  }
+}
+
+async function fetchModulosData(classId) {
+  isFetchingModulos = true;
+  const modulosStep = STEPS.find(s => s.fields.some(f => f.id === 'modulos'));
+  if (STEPS[currentStep] === modulosStep) renderFields();
+
+  try {
+    const response = await fetch(`/api/modulos?classId=${classId}&v=${Date.now()}`);
+
+    if (response.ok) {
+      const data = await response.json();
+      if (modulosStep) {
+        const field = modulosStep.fields.find(f => f.id === 'modulos');
+        
+        // Mapeia os dados vindo da API (ajuste as chaves conforme o retorno do seu backend)
+        field.options = Array.isArray(data.data) 
+          ? data.data.map(m => ({ 
+              value: m.id, 
+              label: m.id + " - "+ m.name 
+            })) 
+          : [];
+          
+        if (STEPS[currentStep] === modulosStep) renderFields();
+      }
+    }
+  } catch (err) {
+    console.error("Erro ao carregar módulos:", err);
+  } finally {
+    isFetchingModulos = false;
+    if (STEPS[currentStep] === modulosStep) renderFields();
   }
 }
 
 // ─── Inicialização ────────────────────────────────────────────────────────────
 function init() {
-  const hasDraft = loadDraft();
-
   render();
 
-  if (hasDraft) {
-    showDraftStatus(t("draftRecovered"));
-  } else {
-    const draftEl = document.getElementById("draftStatus");
-    if (draftEl) draftEl.dataset.visible = "false";
+  // Oculta o wrapper da mensagem de status na inicialização
+  const statusMessageWrapper = document.getElementById("statusMessageWrapper");
+  if (statusMessageWrapper) {
+    statusMessageWrapper.style.display = 'none';
   }
+  fetchTurmasData();
 
   // Navegação
   document.getElementById("nextBtn")?.addEventListener("click", goNext);
@@ -574,7 +715,6 @@ function init() {
     e.preventDefault();
     handleSubmit();
   });
-  document.getElementById("submitBtn")?.addEventListener("click", handleSubmit);
 
   // Limpar formulário
   document.getElementById("clearFormBtn")?.addEventListener("click", () => {
@@ -587,7 +727,6 @@ function init() {
       () => {
         formData = {};
         currentStep = 0;
-        clearDraft();
         render();
         closeConfirm();
       }
