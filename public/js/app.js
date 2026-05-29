@@ -1,7 +1,7 @@
 // ─── Traduções ───────────────────────────────────────────────────────────────
 const i18n = {
   pt: {
-    brandEyebrow: "Plataforma de cadastro",
+    brandEyebrow: "Plataforma de inscrição de treinamentos",
     brandTitle: "Bem-vindo! Vamos começar seu cadastro.",
     brandCopy:
       "Desde 1985, a Full Gauge desenvolve soluções para automação em refrigeração, aquecimento e climatização com padrão internacional de qualidade.",
@@ -26,9 +26,10 @@ const i18n = {
     submitError: "Erro ao enviar. Tente novamente.",
     loading: "Carregando...",
     invalidToken: "Token inválido.",
+    emailBounce: "Este domínio de e-mail não é permitido.",
   },
   en: {
-    brandEyebrow: "Registration Platform",
+    brandEyebrow: "Training Enrollment Platform",
     brandTitle: "Welcome! Let's start your registration.",
     brandCopy:
       "Since 1985, Full Gauge develops solutions for refrigeration, heating and climate control automation with international quality standards.",
@@ -53,9 +54,10 @@ const i18n = {
     submitError: "Error sending. Please try again.",
     loading: "Loading...",
     invalidToken: "Invalid token.",
+    emailBounce: "This email domain is not allowed.",
   },
   es: {
-    brandEyebrow: "Plataforma de registro",
+    brandEyebrow: "Plataforma de inscripción a capacitaciones",
     brandTitle: "¡Bienvenido! Comencemos tu registro.",
     brandCopy:
       "Desde 1985, Full Gauge desarrolla soluciones para automatización en refrigeración, calefacción y climatización con estándares de calidad internacionales.",
@@ -80,10 +82,16 @@ const i18n = {
     submitError: "Error al enviar. Inténtalo de nuevo.",
     loading: "Cargando...",
     invalidToken: "Token inválido.",
+    emailBounce: "Este dominio de correo no está permitido.",
   },
 };
 
 // ─── Definição das Etapas ─────────────────────────────────────────────────────
+// Lista de domínios que costumam causar bounce ou são temporários
+const DISPOSABLE_DOMAINS = [
+  "mailinator.com", "guerrillamail.com", "10minutemail.com", "tempmail.com", "throwawaymail.com"
+];
+
 const STEPS = [
   {
     title: { pt: "Relação conosco", en: "Relationship with us", es: "Relación con nosotros" },
@@ -231,6 +239,11 @@ function t(key) {
   return (i18n[currentLang] || i18n.pt)[key] || key;
 }
 
+function isDisposableEmail(email) {
+  const domain = email.split('@')[1]?.toLowerCase();
+  return DISPOSABLE_DOMAINS.includes(domain);
+}
+
 function applyMask(value, mask) {
   const digits = value.replace(/\D/g, "");
   if (mask === "cpf") {
@@ -290,6 +303,9 @@ function renderFields() {
 
   container.innerHTML = step.fields
     .map((f) => {
+      // Se for o campo token e a relação for GERAL, não renderiza o campo
+      if (f.id === "token" && formData.relacao === "GERAL") return "";
+
       const label = f.label[currentLang] || f.label.pt;
       const val = formData[f.id] ?? "";
       const fullClass = f.full ? "full" : "";
@@ -402,6 +418,9 @@ function renderFields() {
             chip.classList.toggle("radio-chip--selected", chip.querySelector("input").checked);
           });
           formData[f.id] = radio.value;
+
+          // Se a relação mudar, re-renderiza os campos para mostrar/esconder o token
+          if (f.id === "relacao") renderFields();
         });
       });
       return; // só sai do radio
@@ -451,7 +470,7 @@ function renderFields() {
       if (f.validateEmail) {
         const errSpan = document.getElementById(`${f.id}-error`);
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (emailRegex.test(v.trim())) {
+        if (emailRegex.test(v.trim()) && !isDisposableEmail(v.trim())) {
           el.classList.remove("invalid");
           if (errSpan) errSpan.textContent = "";
         }
@@ -598,6 +617,10 @@ function validateCurrentStep() {
           : "Informe um e-mail válido.";
         if (errSpan) errSpan.textContent = msg;
         valid = false;
+      } else if (isDisposableEmail(el.value.trim())) {
+        el.classList.add("invalid");
+        if (errSpan) errSpan.textContent = t("emailBounce");
+        valid = false;
       } else {
         if (errSpan) errSpan.textContent = "";
       }
@@ -618,7 +641,7 @@ function validateCurrentStep() {
 }
 
 // ─── Navegação ────────────────────────────────────────────────────────────────
-function goNext() {
+async function goNext() {
   if (!validateCurrentStep()) {
     showStatus(
       currentLang === "pt"
@@ -630,6 +653,35 @@ function goNext() {
     );
     return;
   }
+
+  // Validação de Token via API na Etapa 1 (se for Parceiro)
+  if (currentStep === 0 && formData.relacao === "PARCEIRO") {
+    const tokenField = document.getElementById("token");
+    const errSpan = document.getElementById("token-error");
+    
+    showStatus(currentLang === "pt" ? "Validando token..." : "Validating token...", "");
+    
+    try {
+      const response = await fetch("/api/validate-token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: formData.token })
+      });
+
+    const result = await response.json();
+
+    if (!response.ok || result.data === false) {
+        if (tokenField) tokenField.classList.add("invalid");
+        if (errSpan) errSpan.textContent = t("invalidToken");
+        showStatus(t("invalidToken"), "error");
+        return;
+      }
+    } catch (error) {
+      showStatus(t("submitError"), "error");
+      return;
+    }
+  }
+
   clearStatus();
   if (currentStep < STEPS.length - 1) {
     currentStep++;
@@ -795,8 +847,8 @@ async function fetchTurmasData() {
       const turmasStep = STEPS.find(s => s.fields.some(f => f.id === 'turmas'));
       if (turmasStep) {
         const field = turmasStep.fields.find(f => f.id === 'turmas');
-        field.options = Array.isArray(data.data) 
-          ? data.data.map(t => ({ value: t.id || t.FG_TRAININGCLASSID, label: (t.id || t.FG_TRAININGCLASSID) + ' - ' + (t.name || t.NAME) })) 
+        field.options = Array.isArray(data) 
+          ? data.map(t => ({ value: t.id || t.FG_TRAININGCLASSID, label: (t.id || t.FG_TRAININGCLASSID) + ' - ' + (t.name || t.NAME) })) 
           : [];
         // Se estivermos na etapa das turmas, renderiza novamente
         if (STEPS[currentStep] === turmasStep) renderFields();
@@ -824,8 +876,8 @@ async function fetchModulosData(classId) {
         const field = modulosStep.fields.find(f => f.id === 'modulos');
         
         // Mapeia os dados vindo da API (ajuste as chaves conforme o retorno do seu backend)
-        field.options = Array.isArray(data.data) 
-          ? data.data.map(m => ({ 
+        field.options = Array.isArray(data) 
+          ? data.map(m => ({ 
               value: m.id || m.FG_MODULEID, 
               label: (m.id || m.FG_MODULEID) + " - " + (m.name || m.NAME) 
             })) 
