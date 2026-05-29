@@ -2,6 +2,8 @@ import { handleTurmasRequest } from '../worker/workers-turmas.js';
 import { handleModulosRequest } from '../worker/worker-modulos.js';
 import { handleRegisterRequest } from '../worker/worker-register.js';
 import { handleTokenValidation } from '../worker/worker-token.js';
+import { handleAttendanceRequest } from '../worker/worker-attendance.js';
+import { handleJwtGenerationRequest } from '../worker/worker-jwt-generator.js';
 
 export default {
   async fetch(request, env, ctx) {
@@ -27,7 +29,17 @@ export default {
       return handleTokenValidation(request, env, ctx);
     }
 
-    // 5. Fallback: Se não for uma rota de API, entrega os arquivos estáticos (HTML, JS, CSS)
+    // 5. Roteamento para a API de Registro de Presença
+    if (url.pathname.replace(/\/$/, "") === "/api/attendance") {
+      return handleAttendanceRequest(request, env, ctx);
+    }
+
+    // 6. Roteamento para a API de Geração de JWT
+    if (url.pathname.replace(/\/$/, "") === "/api/generate-jwt") {
+      return handleJwtGenerationRequest(request, env, ctx);
+    }
+
+    // 7. Fallback: Se não for uma rota de API, entrega os arquivos estáticos (HTML, JS, CSS)
     return env.ASSETS.fetch(request);
   }
 };

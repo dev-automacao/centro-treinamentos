@@ -237,7 +237,7 @@ const STEPS = [
         }
       ],
       termsLink: {
-        url: "https://www.google.com", // Substitua pela URL real dos seus termos de uso
+        url: "https://www.fullgauge.com.br", // Substitua pela URL real dos seus termos de uso
         label: { pt: "Leia os Termos de Uso", en: "Read Terms of Use", es: "Leer Términos de Uso" }
     },
   }
@@ -250,6 +250,8 @@ let formData = {};
 let pendingAction = null;
 let isFetchingTurmas = false;
 let isFetchingModulos = false;
+let isValidatingToken = false;
+let isSubmittingForm = false;
 
 // ─── Utilitários ──────────────────────────────────────────────────────────────
 function t(key) {
@@ -318,17 +320,19 @@ function renderFields() {
   let termsLinkHtml = '';
   let checkboxesInitiallyDisabled = false;
 
-  if (isTermsStep && step.termsLink && !formData.termsLinkVisited) {
+  if (isTermsStep && step.termsLink) {
     termsLinkHtml = `<div class="field-wrap full">
       <a href="${step.termsLink.url}" target="_blank" id="termsLink" class="primary-btn" style="text-decoration: none; display: inline-block; margin-bottom: 1rem;">${step.termsLink.label[currentLang] || step.termsLink.label.pt}</a>
     </div>`;
-    checkboxesInitiallyDisabled = true;
+    if (!formData.termsLinkVisited) {
+      checkboxesInitiallyDisabled = true;
+    }
   }
 
   container.innerHTML = termsLinkHtml + step.fields
     .map((f) => {
-      // Se for o campo token e a relação for GERAL, não renderiza o campo
-      if (f.id === "token" && formData.relacao === "GERAL") return "";
+      // O campo token só deve aparecer se a relação for PARCEIRO
+      if (f.id === "token" && formData.relacao !== "PARCEIRO") return "";
       const fieldType = (f.id === "empresa" && formData.relacao === "GERAL") ? "text" : f.type;
 
       const label = f.label[currentLang] || f.label.pt;
@@ -529,6 +533,17 @@ function renderFields() {
       }
     });
   });
+
+  // Add event listener for termsLink if it exists and hasn't been visited yet
+  if (isTermsStep && step.termsLink && !formData.termsLinkVisited) {
+    const termsLinkEl = document.getElementById("termsLink");
+    if (termsLinkEl) {
+      termsLinkEl.addEventListener("click", () => {
+        formData.termsLinkVisited = true;
+        render(); // Re-render to enable checkboxes
+      });
+    }
+  }
 }
 
 function renderButtons() {
@@ -539,11 +554,26 @@ function renderButtons() {
   const step = STEPS[currentStep];
 
   if (prevBtn) prevBtn.style.visibility = currentStep === 0 ? "hidden" : "visible";
-  if (nextBtn) { nextBtn.style.display = isLast ? "none" : "inline-flex"; nextBtn.textContent = t("next"); }
+  if (nextBtn) {
+    nextBtn.style.display = isLast ? "none" : "inline-flex";
+    if (isValidatingToken) {
+      nextBtn.disabled = true;
+      nextBtn.innerHTML = `<span class="spinner" aria-hidden="true"></span> ${t("loading")}`;
+    } else {
+      nextBtn.disabled = false;
+      nextBtn.textContent = t("next");
+    }
+  }
   
   if (submitBtn) { 
-    submitBtn.style.display = isLast ? "inline-flex" : "none"; 
-    submitBtn.textContent = t("submit"); 
+    submitBtn.style.display = isLast ? "inline-flex" : "none";
+    if (isSubmittingForm) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = `<span class="spinner" aria-hidden="true"></span> ${t("loading")}`;
+    } else {
+      submitBtn.disabled = false;
+      submitBtn.textContent = t("submit");
+    }
     
     // Desabilita o botão se houver checkboxes obrigatórios não marcados (termos)
     const termsAccepted = step.fields.every(f => f.type !== "checkbox" || !f.required || formData[f.id] === true);
@@ -684,6 +714,9 @@ async function goNext() {
     
     showStatus(currentLang === "pt" ? "Validando token..." : "Validating token...", "");
     
+    isValidatingToken = true;
+    renderButtons();
+
     try {
       const response = await fetch("/api/validate-token", {
         method: "POST",
@@ -697,6 +730,8 @@ async function goNext() {
         if (tokenField) tokenField.classList.add("invalid");
         if (errSpan) errSpan.textContent = t("invalidToken");
         showStatus(t("invalidToken"), "error");
+        isValidatingToken = false;
+        renderButtons();
         return;
       }
 
@@ -716,8 +751,11 @@ async function goNext() {
       } else {
         formData.turmasLocked = false;
       }
+      isValidatingToken = false;
     } catch (error) {
       showStatus(t("submitError"), "error");
+      isValidatingToken = false;
+      renderButtons();
       return;
     }
   }
@@ -829,6 +867,9 @@ async function handleSubmit() {
     return;
   }
 
+  isSubmittingForm = true;
+  renderButtons(); // Mostra o loader no botão de submit
+
   showStatus(
     currentLang === "pt" ? "Enviando..." : currentLang === "en" ? "Sending..." : "Enviando...",
     ""
@@ -846,12 +887,17 @@ async function handleSubmit() {
       body: JSON.stringify(payload),
     });
     if (res.ok) {
+      isSubmittingForm = false; // Esconde o loader
       handleSuccessfulSubmission(); // Chama a nova função para lidar com o sucesso
     } else {
       showStatus(t("submitError"), "error");
+      isSubmittingForm = false; // Esconde o loader
+      renderButtons(); // Re-renderiza para remover o loader
     }
   } catch {
     showStatus(t("submitError"), "error");
+    isSubmittingForm = false; // Esconde o loader
+    renderButtons(); // Re-renderiza para remover o loader
   }
 }
 
@@ -1018,6 +1064,57 @@ function init() {
   // Restaurar tema salvo
   const savedTheme = localStorage.getItem("fg_theme");
   if (savedTheme) document.body.dataset.theme = savedTheme;
+
+  // --- Tester Utility: Preenchimento Automático ---
+  // Ativado apenas se a URL contiver o parâmetro ?debug (ex: site.com/?debug)
+  if (new URLSearchParams(window.location.search).has('debug')) {
+    const controlGroup = document.querySelector('.control-group');
+    if (controlGroup) {
+      const createFillBtn = (label, relType) => {
+        const btn = document.createElement('button');
+        btn.className = 'ghost-btn';
+        btn.style.cssText = 'border-color: var(--fg-green-500); color: var(--fg-green-700); font-weight: 700; margin-right: 4px;';
+        btn.innerHTML = `🪄 ${label}`;
+        btn.onclick = () => {
+          const step = STEPS[currentStep];
+          const samples = {
+            relacao: relType,
+            token: relType === "PARCEIRO" ? "FULLGAUGE-6EY380IL10CCP3ZANSZZ" : "Full Gauge Controls",
+            fullName: "Usuário de Teste FG",
+            cpf: "123.456.789-00",
+            empresa: relType === "PARCEIRO" ? "PAR-0001" : "",
+            segmento: "Refrigeração",
+            atuacao: "Industrial",
+            cidade: "Canoas",
+            telefone: "(51) 98888-7777",
+            email: "ian.campillay@fullgauge.com.br",
+            termImage: true,
+            termCosts: true
+          };
+
+          // Força a visita aos termos se estiver na última etapa para habilitar os checkboxes
+          if (currentStep === STEPS.length - 1) formData.termsLinkVisited = true;
+
+          step.fields.forEach(f => {
+            if (samples[f.id] !== undefined) {
+              formData[f.id] = samples[f.id];
+            } else if (f.type === 'select' && f.options && f.options.length > 0) {
+              const opt = f.options[0];
+              const val = (typeof opt === 'object') ? opt.value : opt;
+              formData[f.id] = f.multiple ? [val] : val;
+            }
+            // Gatilho para carregar módulos se preencher a turma via tester
+            if (f.id === 'turmas' && formData[f.id]) fetchModulosData(formData[f.id]);
+          });
+          render();
+        };
+        controlGroup.prepend(btn);
+      };
+
+      createFillBtn('Fill General', 'GERAL');
+      createFillBtn('Fill Partner', 'PARCEIRO');
+    }
+  }
 }
 
 document.addEventListener("DOMContentLoaded", init);
