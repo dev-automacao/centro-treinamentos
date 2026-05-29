@@ -486,6 +486,14 @@ button:focus {
   color: var(--fg-green-700);
 }
 
+/* Estado desabilitado para Chips */
+.checkbox-chip:has(input:disabled) {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+  filter: grayscale(0.5);
+}
+
 /* Esconde o input nativo mas mantém acessibilidade */
 .radio-chip input[type="radio"],
 .checkbox-chip input[type="checkbox"] {

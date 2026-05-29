@@ -27,6 +27,7 @@ const i18n = {
     loading: "Carregando...",
     invalidToken: "Token inválido.",
     emailBounce: "Este domínio de e-mail não é permitido.",
+    selectOption:"Selecione uma opção",
   },
   en: {
     brandEyebrow: "Training Enrollment Platform",
@@ -55,6 +56,7 @@ const i18n = {
     loading: "Loading...",
     invalidToken: "Invalid token.",
     emailBounce: "This email domain is not allowed.",
+    selectOption:"Select an option"
   },
   es: {
     brandEyebrow: "Plataforma de inscripción a capacitaciones",
@@ -83,6 +85,7 @@ const i18n = {
     loading: "Cargando...",
     invalidToken: "Token inválido.",
     emailBounce: "Este dominio de correo no está permitido.",
+    selectOption:"Seleccione una opción"
   },
 };
 
@@ -142,7 +145,16 @@ const STEPS = [
         label: { pt: "Empresa *", en: "Company *", es: "Empresa *" },
         type: "select",
         required: true,
-        options: ["Armacell", "Brahex", "Bitzer", "Chemours", "DuFrio", "Frigelar", "Nacional Frio", "Soma"],
+        options: [
+          { value: "PAR-0002", label: "Armacell" },
+          { value: "PAR-0003", label: "Brahex" },
+          { value: "PAR-0004", label: "Bitzer" },
+          { value: "PAR-0005", label: "Chemours" },
+          { value: "PAR-0006", label: "DuFrio" },
+          { value: "PAR-0001", label: "Frigelar" },
+          { value: "PAR-0007", label: "Nacional Frio" },
+          { value: "PAR-0008", label: "Soma" }
+        ],
       },
       {
         id: "segmento",
@@ -156,7 +168,7 @@ const STEPS = [
         label: { pt: "Atuação *", en: "Field of Work *", es: "Actuación *" },
         type: "select",
         required: true,
-        options: ["Residencial", "Comercial", "Industrial"],
+        options: ["Residencial", "Comercial", "Industrial","Saúde/hospitalar"],
       },
       {
         id: "cidade",
@@ -193,37 +205,42 @@ const STEPS = [
     ],
   },
   {
-    title: { pt: "Termo de Inscrição", en: "Enrollment Terms", es: "Término de Inscripción" },
-    description: {
-      pt: "Leia e aceite os termos para concluir sua inscrição.",
-      en: "Read and accept the terms to complete your registration.",
-      es: "Lea y acepte los términos para completar su registro.",
-    },
-    fields: [
-      {
-        id: "termImage",
-        label: {
-          pt: "Declaro que li e concordo com a cessão de direitos de imagem",
-          en: "I declare that I have read and agree to the assignment of image rights",
-          es: "Declaro que he leído y acepto la cesión de derechos de imagen"
-        },
-        type: "checkbox",
-        required: true,
-        full: true
+      title: { pt: "Termo de Inscrição", en: "Enrollment Terms", es: "Término de Inscripción" },
+      description: {
+        pt: "Leia e aceite os termos para concluir sua inscrição.",
+        en: "Read and accept the terms to complete your registration.",
+        es: "Lea y acepte los términos para completar su registro.",
       },
-      {
-        id: "termCosts",
-        label: {
-          pt: "Declaro que li e concordo que o inscrito é responsável pelos seus próprios gastos como passagens, hospedagens e afins.",
-          en: "I declare that I have read and agree that the enrollee is responsible for their own expenses.",
-          es: "Declaro que he leído y acepto que el inscrito es responsable de sus propios gastos."
+      fields: [
+        // Checkboxes de termos
+        {
+          id: "termImage",
+          label: {
+            pt: "Declaro que li e concordo com a cessão de direitos de imagem",
+            en: "I declare that I have read and agree to the assignment of image rights",
+            es: "Declaro que he leído y acepto la cesión de derechos de imagen"
+          },
+          type: "checkbox",
+          required: true,
+          full: true
         },
-        type: "checkbox",
-        required: true,
-        full: true
-      }
-    ],
-  },
+        {
+          id: "termCosts",
+          label: {
+            pt: "Declaro que li e concordo que o inscrito é responsável pelos seus próprios gastos como passagens, hospedagens e afins.",
+            en: "I declare that I have read and agree that the enrollee is responsible for their own expenses.",
+            es: "Declaro que he leído y acepto que el inscrito es responsable de sus propios gastos."
+          },
+          type: "checkbox",
+          required: true,
+          full: true
+        }
+      ],
+      termsLink: {
+        url: "https://www.google.com", // Substitua pela URL real dos seus termos de uso
+        label: { pt: "Leia os Termos de Uso", en: "Read Terms of Use", es: "Leer Términos de Uso" }
+    },
+  }
 ];
 
 // ─── Estado ───────────────────────────────────────────────────────────────────
@@ -296,21 +313,29 @@ function renderFields() {
   if (desc) desc.textContent = step.description[currentLang] || step.description.pt;
   if (!container) return;
 
-  if (step.isReview) {
-    renderReview(container);
-    return;
+  // Verifica se é a etapa de termos e se há um link para exibir
+  const isTermsStep = currentStep === STEPS.length - 1;
+  let termsLinkHtml = '';
+  let checkboxesInitiallyDisabled = false;
+
+  if (isTermsStep && step.termsLink && !formData.termsLinkVisited) {
+    termsLinkHtml = `<div class="field-wrap full">
+      <a href="${step.termsLink.url}" target="_blank" id="termsLink" class="primary-btn" style="text-decoration: none; display: inline-block; margin-bottom: 1rem;">${step.termsLink.label[currentLang] || step.termsLink.label.pt}</a>
+    </div>`;
+    checkboxesInitiallyDisabled = true;
   }
 
-  container.innerHTML = step.fields
+  container.innerHTML = termsLinkHtml + step.fields
     .map((f) => {
       // Se for o campo token e a relação for GERAL, não renderiza o campo
       if (f.id === "token" && formData.relacao === "GERAL") return "";
+      const fieldType = (f.id === "empresa" && formData.relacao === "GERAL") ? "text" : f.type;
 
       const label = f.label[currentLang] || f.label.pt;
       const val = formData[f.id] ?? "";
       const fullClass = f.full ? "full" : "";
 
-      if (f.type === "select") {
+      if (fieldType === "select") {
         const isLoading = (f.id === "turmas" && isFetchingTurmas) || (f.id === "modulos" && isFetchingModulos);
         
         if (f.multiple && !isLoading) {
@@ -338,7 +363,8 @@ function renderFields() {
           </div>`;
         }
 
-        const placeholder = isLoading ? t("loading") : "Selecione uma opção";
+        const isLocked = f.id === "empresa" && formData.empresaLocked;
+        const placeholder = isLoading ? t("loading") : t("selectOption");
         const opts = (f.options || [])
           .map((o) => {
             const isObj = typeof o === "object" && o !== null;
@@ -352,13 +378,13 @@ function renderFields() {
           .join("");
         return `<div class="field-wrap ${fullClass} ${isLoading ? 'loading-select' : ''}">
           <label for="${f.id}">${label}</label>
-          <select id="${f.id}" name="${f.id}"${f.required ? " required" : ""}${isLoading ? " disabled" : ""}>
+          <select id="${f.id}" name="${f.id}"${f.required ? " required" : ""}${isLoading || isLocked ? " disabled" : ""}>
             <option value="">${placeholder}</option>${opts}
           </select>
         </div>`;
       }
 
-      if (f.type === "radio") {
+      if (fieldType === "radio") {
         const chips = f.options.map((o) => {
           const optLabel = o.label[currentLang] || o.label.pt;
           const checked = val === o.value ? " checked" : "";
@@ -375,12 +401,13 @@ function renderFields() {
         </div>`;
       }
 
-      if (f.type === "checkbox") {
+      if (fieldType === "checkbox") {
         const checked = val === true ? " checked" : "";
+        const disabledAttr = checkboxesInitiallyDisabled ? "disabled" : ""; // Aplica o disabled aqui
         return `<div class="field-wrap ${fullClass}" id="field-wrap-${f.id}">
           <div class="checkbox-group">
             <label class="checkbox-chip${val === true ? " checkbox-chip--selected" : ""}" for="${f.id}">
-              <input type="checkbox" id="${f.id}" name="${f.id}" ${checked} ${f.required ? "required" : ""}>
+              <input type="checkbox" id="${f.id}" name="${f.id}" ${checked} ${f.required ? "required" : ""} ${disabledAttr}>
               <span>${label}</span>
             </label>
           </div>
@@ -392,7 +419,7 @@ function renderFields() {
       return `<div class="field-wrap ${fullClass}">
         <label for="${f.id}">${label}</label>
         <input
-          type="${f.type}"
+          type="${fieldType}"
           id="${f.id}"
           name="${f.id}"
           value="${f.uppercase ? val.toUpperCase() : val}"
@@ -407,26 +434,32 @@ function renderFields() {
 
   // === EVENT LISTENERS (corrigido) ===
   step.fields.forEach((f) => {
-    if (f.type === "radio") {
+    const fieldType = (f.id === "empresa" && formData.relacao === "GERAL") ? "text" : f.type;
+
+    if (fieldType === "radio") {
       const group = document.getElementById(`${f.id}-group`);
       if (!group) return;
       group.querySelectorAll(`input[name="${f.id}"]`).forEach((radio) => {
         radio.addEventListener("change", () => {
           const wrap = document.getElementById(`field-wrap-${f.id}`);
           if (wrap) wrap.classList.remove("invalid-group");
-          group.querySelectorAll(".radio-chip").forEach((chip) => {
-            chip.classList.toggle("radio-chip--selected", chip.querySelector("input").checked);
-          });
-          formData[f.id] = radio.value;
 
-          // Se a relação mudar, re-renderiza os campos para mostrar/esconder o token
-          if (f.id === "relacao") renderFields();
+          if (f.id === "relacao") {
+            // Ao mudar a relação, limpa o formulário mantendo apenas a nova seleção
+            formData = { [f.id]: radio.value };
+            render();
+          } else {
+            formData[f.id] = radio.value;
+            group.querySelectorAll(".radio-chip").forEach((chip) => {
+              chip.classList.toggle("radio-chip--selected", chip.querySelector("input").checked);
+            });
+          }
         });
       });
       return; // só sai do radio
     }
 
-    if (f.type === "select" && f.multiple) {
+    if (fieldType === "select" && f.multiple) {
       const group = document.getElementById(`${f.id}-group`);
       if (!group) return;
       group.querySelectorAll(`input[type="checkbox"]`).forEach((cb) => {
@@ -445,7 +478,7 @@ function renderFields() {
     const el = document.getElementById(f.id);
     if (!el) return;
 
-    el.addEventListener(f.type === "checkbox" ? "change" : "input", () => {
+    el.addEventListener(fieldType === "checkbox" ? "change" : "input", () => {
       const wrap = document.getElementById(`field-wrap-${f.id}`);
       if (wrap) wrap.classList.remove("invalid-group"); // Remove o erro ao interagir
       el.classList.remove("invalid");
@@ -459,9 +492,19 @@ function renderFields() {
         el.value = v; // Atualiza o valor exibido no campo
       }
       
-      if (f.type === "checkbox") {
+      if (fieldType === "checkbox") {
         formData[f.id] = el.checked;
         el.closest(".checkbox-chip")?.classList.toggle("checkbox-chip--selected", el.checked);
+        
+        // Se estivermos na última etapa, atualizamos o estado do botão de submit em tempo real
+        const isLast = currentStep === STEPS.length - 1;
+        if (isLast) renderButtons();
+      } else if (f.id === "turmas" && v) {
+        // Lógica específica para turmas: limpa módulos e busca novos dados
+        formData["modulos"] = []; 
+        fetchModulosData(v);
+        // Garante que o valor seja salvo
+        formData[f.id] = v;
       } else {
         formData[f.id] = v;
       }
@@ -485,38 +528,7 @@ function renderFields() {
         }
       }
     });
-
-    el.addEventListener("change", () => {
-      el.classList.remove("invalid");
-      formData[f.id] = el.value;
-
-      // Se mudar a turma, busca os módulos
-      if (f.id === "turmas" && el.value) {
-        formData["modulos"] = []; // Limpa seleções anteriores ao trocar a turma
-        fetchModulosData(el.value);
-      }
-    });
   });
-}
-
-function renderReview(container) {
-  const allFields = STEPS.flatMap((s) => s.fields);
-  const rows = allFields
-    .map((f) => {
-      const label = f.label[currentLang] || f.label.pt;
-      let val = formData[f.id];
-      
-      // Tratamento para exibir arrays (módulos) de forma amigável no resumo
-      if (Array.isArray(val)) val = val.length > 0 ? val.join(", ") : "—";
-      else val = val || "—";
-
-      return `<div class="field-wrap">
-        <label>${label}</label>
-        <p style="margin:0;font-size:0.92rem;color:var(--ink-900);padding:0.62rem 0.7rem;border:1px solid var(--line-200);border-radius:10px;background:color-mix(in srgb,var(--panel) 95%,transparent)">${val}</p>
-      </div>`;
-    })
-    .join("");
-  container.innerHTML = `<div class="form-grid" style="grid-column:1/-1">${rows}</div>`;
 }
 
 function renderButtons() {
@@ -524,10 +536,19 @@ function renderButtons() {
   const nextBtn = document.getElementById("nextBtn");
   const submitBtn = document.getElementById("submitBtn");
   const isLast = currentStep === STEPS.length - 1;
+  const step = STEPS[currentStep];
 
   if (prevBtn) prevBtn.style.visibility = currentStep === 0 ? "hidden" : "visible";
   if (nextBtn) { nextBtn.style.display = isLast ? "none" : "inline-flex"; nextBtn.textContent = t("next"); }
-  if (submitBtn) { submitBtn.style.display = isLast ? "inline-flex" : "none"; submitBtn.textContent = t("submit"); }
+  
+  if (submitBtn) { 
+    submitBtn.style.display = isLast ? "inline-flex" : "none"; 
+    submitBtn.textContent = t("submit"); 
+    
+    // Desabilita o botão se houver checkboxes obrigatórios não marcados (termos)
+    const termsAccepted = step.fields.every(f => f.type !== "checkbox" || !f.required || formData[f.id] === true);
+    submitBtn.disabled = isLast && !termsAccepted;
+  }
   if (prevBtn) prevBtn.textContent = t("previous");
 }
 
@@ -553,7 +574,9 @@ function validateCurrentStep() {
   if (step.isReview) return true;
   let valid = true;
   step.fields.forEach((f) => {
-    if (f.type === "radio") {
+    const fieldType = (f.id === "empresa" && formData.relacao === "GERAL") ? "text" : f.type;
+
+    if (fieldType === "radio") {
       const wrap = document.getElementById(`field-wrap-${f.id}`);
       const group = document.getElementById(`${f.id}-group`);
       if (!group) return;
@@ -566,7 +589,7 @@ function validateCurrentStep() {
       return;
     }
 
-    if (f.type === "select" && f.multiple) {
+    if (fieldType === "select" && f.multiple) {
       const wrap = document.getElementById(`field-wrap-${f.id}`);
       const group = document.getElementById(`${f.id}-group`);
       if (wrap) wrap.classList.remove("invalid-group");
@@ -587,13 +610,13 @@ function validateCurrentStep() {
     const wrap = document.getElementById(`field-wrap-${f.id}`);
     if (wrap) wrap.classList.remove("invalid-group"); // Limpa antes de revalidar
 
-    if (f.type === "checkbox") {
+    if (fieldType === "checkbox") {
       if (f.required && !el.checked) {
         if (wrap) wrap.classList.add("invalid-group"); // Aplica ao wrap para consistência visual
         valid = false;
       }
     } else {
-      const isSelectMultiple = f.type === "select" && f.multiple;
+      const isSelectMultiple = fieldType === "select" && f.multiple;
       const isEmpty = isSelectMultiple 
         ? (!Array.isArray(formData[f.id]) || formData[f.id].length === 0)
         : !el.value.trim();
@@ -668,13 +691,30 @@ async function goNext() {
         body: JSON.stringify({ token: formData.token })
       });
 
-    const result = await response.json();
+      const result = await response.json();
 
-    if (!response.ok || result.data === false) {
+      if (!response.ok || result.data === false) {
         if (tokenField) tokenField.classList.add("invalid");
         if (errSpan) errSpan.textContent = t("invalidToken");
         showStatus(t("invalidToken"), "error");
         return;
+      }
+
+      // Se a API retornar um parceiro vinculado ao token, seleciona a empresa e trava o campo
+      if (result.parceiro) {
+        formData.empresa = result.parceiro;
+        formData.empresaLocked = true;
+      } else {
+        formData.empresaLocked = false;
+      }
+
+      // Se a API retornar uma turma vinculada ao token, seleciona a turma e trava o campo
+      if (result.turma) {
+        formData.turmas = result.turma;
+        formData.turmasLocked = true;
+        fetchModulosData(result.turma); // Carrega módulos antecipadamente
+      } else {
+        formData.turmasLocked = false;
       }
     } catch (error) {
       showStatus(t("submitError"), "error");
@@ -777,6 +817,18 @@ function closeConfirm() {
 
 // ─── Submit ───────────────────────────────────────────────────────────────────
 async function handleSubmit() {
+  if (!validateCurrentStep()) {
+    showStatus(
+      currentLang === "pt"
+        ? "Preencha os campos obrigatórios."
+        : currentLang === "en"
+        ? "Please fill in the required fields."
+        : "Por favor, completa los campos obligatorios.",
+      "error"
+    );
+    return;
+  }
+
   showStatus(
     currentLang === "pt" ? "Enviando..." : currentLang === "en" ? "Sending..." : "Enviando...",
     ""
@@ -847,8 +899,8 @@ async function fetchTurmasData() {
       const turmasStep = STEPS.find(s => s.fields.some(f => f.id === 'turmas'));
       if (turmasStep) {
         const field = turmasStep.fields.find(f => f.id === 'turmas');
-        field.options = Array.isArray(data) 
-          ? data.map(t => ({ value: t.id || t.FG_TRAININGCLASSID, label: (t.id || t.FG_TRAININGCLASSID) + ' - ' + (t.name || t.NAME) })) 
+        field.options = Array.isArray(data.data) 
+          ? data.data.map(t => ({ value: t.id || t.FG_TRAININGCLASSID, label: (t.id || t.FG_TRAININGCLASSID) + ' - ' + (t.name || t.NAME) })) 
           : [];
         // Se estivermos na etapa das turmas, renderiza novamente
         if (STEPS[currentStep] === turmasStep) renderFields();
@@ -876,8 +928,8 @@ async function fetchModulosData(classId) {
         const field = modulosStep.fields.find(f => f.id === 'modulos');
         
         // Mapeia os dados vindo da API (ajuste as chaves conforme o retorno do seu backend)
-        field.options = Array.isArray(data) 
-          ? data.map(m => ({ 
+        field.options = Array.isArray(data.data) 
+          ? data.data.map(m => ({ 
               value: m.id || m.FG_MODULEID, 
               label: (m.id || m.FG_MODULEID) + " - " + (m.name || m.NAME) 
             })) 
