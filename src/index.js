@@ -35,7 +35,7 @@ export default {
     }
 
     // 6. Roteamento para a API de Geração de JWT
-    if (url.pathname.replace(/\/$/, "") === "/api/generate-jwt") {
+    if (url.pathname.replace(/\/$/, "") === "/api/generate-jwt-register-attendance") {
       return handleJwtGenerationRequest(request, env, ctx);
     }
 

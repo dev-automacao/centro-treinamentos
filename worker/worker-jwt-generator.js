@@ -25,8 +25,17 @@ export async function handleJwtGenerationRequest(request, env) {
       });
     }
 
+    const apiKey = request.headers.get("x-api-key");
+
+    if (apiKey !== env.API_KEY) {
+        return new Response(JSON.stringify({
+            error: "Não autorizado. Chave de API inválida."
+        }), { status: 401 });
+    }
+
     const secret = new TextEncoder().encode(env.JWT_SECRET);
 
+    
     // Gera o token com validade (ex: 7 dias)
     const jwt = await new SignJWT({ classId, email })
       .setProtectedHeader({ alg: 'HS256' })

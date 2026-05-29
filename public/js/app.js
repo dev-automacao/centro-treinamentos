@@ -632,7 +632,7 @@ function validateCurrentStep() {
       return;
     }
 
-        const el = document.getElementById(f.id);
+    const el = document.getElementById(f.id);
     if (!el) return;
     el.classList.remove("invalid");
     el.removeAttribute("data-error");
@@ -658,7 +658,7 @@ function validateCurrentStep() {
       }
     }
 
-        if (f.validateEmail && el.value.trim()) {
+    if (f.validateEmail && el.value.trim()) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       const errSpan = document.getElementById(`${f.id}-error`);
       if (!emailRegex.test(el.value.trim())) {
@@ -1010,7 +1010,12 @@ function init() {
   // Submit
   document.getElementById("leadForm")?.addEventListener("submit", (e) => {
     e.preventDefault();
-    handleSubmit();
+    const isLast = currentStep === STEPS.length - 1;
+    if (isLast) {
+      handleSubmit();
+    } else {
+      goNext();
+    }
   });
 
   // Limpar formulário

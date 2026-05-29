@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nova Página - Full Gauge</title>
+  <title>Registro de presença de treinamentos - Full Gauge</title>
+  <link rel="icon" type="image/svg+xml" href="/assets/logo.svg">
   <link rel="stylesheet" href="/css/style.css">
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700&display=swap" rel="stylesheet">
 </head>
@@ -13,6 +14,7 @@
   <main class="app-shell" style="grid-template-columns: 1fr; justify-items: center; align-items: center; min-height: 80vh;">
     <section class="wizard-panel" style="text-align: center; max-width: 600px;">
       <div class="brand-card" style="margin-bottom: 2rem;">
+        <img src="/assets/logo.svg" alt="Full Gauge Controls" class="brand-logo" style="margin-bottom: 1.5rem;">
         <h1 style="color: #fff; margin-bottom: 0;">Registro de Presença</h1>
       </div>
 
@@ -22,7 +24,7 @@
 
         <div class="field-wrap full">
           <p id="userInfo" style="margin-bottom: 1.5rem; font-size: 0.95rem; color: var(--ink-700); display: none;">
-            Registrando presença para: <strong id="displayEmail"></strong>
+            Registrando presença para: <strong id="displayEmail"></strong><br>Turma: <strong id="displayClassId"></strong>
           </p>
 
           <label style="font-size: 1.1rem; display: block; margin-bottom: 1rem;">Confirmar presença?</label>
@@ -56,11 +58,13 @@
     const jwtTokenInput = document.getElementById('jwtToken');
     const displayEmail = document.getElementById('displayEmail');
     const userInfo = document.getElementById('userInfo');
+    const displayClassId = document.getElementById('displayClassId');
     const attendanceForm = document.getElementById('attendanceForm');
     const formError = document.getElementById('formError');
     const submitBtn = attendanceForm.querySelector('button[type="submit"]');
 
     let emailForDisplay = null;
+    let classIdForDisplay = null;
 
     if (token) {
       try {
@@ -68,17 +72,19 @@
         // O payload é a segunda parte do JWT (entre os pontos)
         const payloadBase64 = token.split('.')[1];
         if (payloadBase64) {
-          const decodedPayload = JSON.parse(atob(payloadBase64));
+          const decodedPayload = JSON.parse(decodeURIComponent(escape(atob(payloadBase64))));
           emailForDisplay = decodedPayload.email;
+          classIdForDisplay = decodedPayload.classId;
         }
       } catch (e) {
         console.error("Erro ao decodificar payload do JWT para exibição:", e);
       }
     }
 
-    if (token && emailForDisplay) {
+    if (token && emailForDisplay && classIdForDisplay) {
       jwtTokenInput.value = token; // Armazena o JWT completo
       displayEmail.textContent = emailForDisplay;
+      displayClassId.textContent = classIdForDisplay;
       userInfo.style.display = 'block';
 
       // Limpa a URL visualmente (remove o ?classId=... da barra de endereço)
